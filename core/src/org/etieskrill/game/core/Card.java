@@ -1,11 +1,7 @@
 package org.etieskrill.game.core;
 
-import com.badlogic.gdx.graphics.Texture;
-
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.Future;
 
 public class Card {
 
@@ -16,7 +12,8 @@ public class Card {
     private final int cost;
     private final List<Effect> effects;
     private final CardDescription decription;
-    private final Optional<String> flavourText;
+    private final boolean hasFlavourText;
+    private final CardDescription flavourText;
 
     private Card(CardBuilder builder) {
         this.id = builder.id;
@@ -26,6 +23,7 @@ public class Card {
         this.cost = builder.cost;
         this.effects = builder.effects;
         this.decription = builder.description;
+        this.hasFlavourText = builder.hasFlavourText;
         this.flavourText = builder.flavourText;
     }
 
@@ -37,7 +35,8 @@ public class Card {
         private int cost;
         private final List<Effect> effects;
         private CardDescription description;
-        private Optional<String> flavourText;
+        private boolean hasFlavourText;
+        private CardDescription flavourText;
 
         public CardBuilder(String id, int cost, Effect... effects) {
             this.id = id;
@@ -68,11 +67,12 @@ public class Card {
             this.cost = cost;
         }
 
-        public void setDecription(CardDescription description) {
+        public void setDescription(CardDescription description) {
             this.description = description;
         }
 
-        public void setFlavourText(Optional<String> flavourText) {
+        public void setFlavourText(CardDescription flavourText) {
+            this.hasFlavourText = true;
             this.flavourText = flavourText;
         }
 
