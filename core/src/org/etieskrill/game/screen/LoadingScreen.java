@@ -26,13 +26,13 @@ public class LoadingScreen extends BaseScreen {
 
     @Override
     protected void render() {
-        if (manager.update()) {
+        if (manager.getManager().update()) {
             app.setScreen(new MainMenuScreen(app));
         }
 
         for (Actor actor : uiStage.getActors()) {
             if (actor.getName().equals("labelProgress")) {
-                ((Label) actor).setText("Loading...%.0f%%".formatted(manager.getProgress() * 100));
+                ((Label) actor).setText("Loading...%.0f%%".formatted(manager.getManager().getProgress() * 100));
             }
         }
     }

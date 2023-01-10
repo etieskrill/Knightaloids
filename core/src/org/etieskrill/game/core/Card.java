@@ -1,5 +1,7 @@
 package org.etieskrill.game.core;
 
+import org.etieskrill.game.core.effect.BaseEffect;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -10,7 +12,7 @@ public class Card {
     private final String bannerTexture;
     private final String title;
     private final int cost;
-    private final List<Effect> effects;
+    private final List<BaseEffect> effects;
     private final CardDescription decription;
     private final boolean hasFlavourText;
     private final CardDescription flavourText;
@@ -33,12 +35,12 @@ public class Card {
         private String bannerTexture;
         private String title;
         private int cost;
-        private final List<Effect> effects;
+        private final List<BaseEffect> effects;
         private CardDescription description;
         private boolean hasFlavourText;
         private CardDescription flavourText;
 
-        public CardBuilder(String id, int cost, Effect... effects) {
+        public CardBuilder(String id, int cost, BaseEffect... effects) {
             this.id = id;
             this.backgroundNinePatch = "assets/cards/background.9.png";
             this.bannerTexture = "assets/cards/banners/" + id;

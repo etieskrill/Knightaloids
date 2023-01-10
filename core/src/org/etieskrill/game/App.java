@@ -28,8 +28,8 @@ public class App extends Game {
 		manager.dispose();
 	}
 
-	public AssetManager getManager() {
-		return manager.getManager();
+	public ResourceManager getManager() {
+		return manager;
 	}
 
 	public Skin getSkin() {

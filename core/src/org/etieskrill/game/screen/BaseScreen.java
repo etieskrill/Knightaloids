@@ -6,23 +6,28 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import org.etieskrill.game.App;
+import org.etieskrill.game.ResourceManager;
+import org.etieskrill.game.core.Entity;
+
+import java.util.ArrayList;
 
 public abstract class BaseScreen implements Screen {
 
     protected final App app;
-    protected final AssetManager manager;
+    protected final ResourceManager manager;
     protected final Skin skin;
 
     protected final SpriteBatch batch = new SpriteBatch();
 
-    protected final PerspectiveCamera camera = new PerspectiveCamera();
-    protected final FillViewport viewport = new FillViewport(1920, 1080, camera);
+    protected final OrthographicCamera camera = new OrthographicCamera();
+    protected final FillViewport viewport = new FillViewport(1280, 720, camera);
     protected final Stage stage = new Stage(viewport, batch);
 
     protected final OrthographicCamera uiCamera = new OrthographicCamera();
@@ -33,6 +38,8 @@ public abstract class BaseScreen implements Screen {
         this.app = app;
         this.manager = app.getManager();
         this.skin = app.getSkin();
+        viewport.apply();
+        uiViewport.apply();
         init();
     }
 
@@ -47,7 +54,11 @@ public abstract class BaseScreen implements Screen {
         uiStage.act(delta);
 
         render();
+        stage.getViewport().apply();
+        //batch.setProjectionMatrix(camera.combined);
         stage.draw();
+        uiStage.getViewport().apply();
+        //batch.setProjectionMatrix(uiCamera.combined);
         uiStage.draw();
     }
 
@@ -57,8 +68,8 @@ public abstract class BaseScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
-        viewport.update(width, height);
-        uiViewport.update(width, height);
+        stage.getViewport().update(width, height, false);
+        uiStage.getViewport().update(width, height, true);
     }
 
     @Override
