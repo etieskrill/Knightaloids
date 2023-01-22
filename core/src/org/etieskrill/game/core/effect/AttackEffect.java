@@ -1,13 +1,13 @@
 package org.etieskrill.game.core.effect;
 
-public class AttackEffect extends BaseEffect {
+import org.etieskrill.game.core.Entity.Entity;
+import org.etieskrill.game.core.card.Card;
 
-    public AttackEffect(float magnitude) {
-        super(magnitude);
-    }
+public class AttackEffect extends EntityInstantEffect {
 
     @Override
-    protected void apply() {
+    public void apply(Entity target) {
+        target.damage(8);
     }
 
 }

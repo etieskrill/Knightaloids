@@ -1,4 +1,4 @@
 package org.etieskrill.game.core;
 
-public class CardDescription {
+public interface SettingsAPI {
 }
