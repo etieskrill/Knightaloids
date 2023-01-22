@@ -1,6 +1,6 @@
 package org.etieskrill.game.core.effect;
 
-import org.etieskrill.game.core.Entity.Entity;
+import org.etieskrill.game.core.entity.Entity;
 import org.etieskrill.game.core.card.Card;
 
 public abstract class StatusEffect extends Effect {
@@ -13,7 +13,8 @@ public abstract class StatusEffect extends Effect {
 
     public enum EffectApplication {
         BEFORE_TURN,
-        AFTER_TURN
+        AFTER_TURN,
+        CONSTANT
     }
 
     private final EffectStacking STACKING;
@@ -26,12 +27,20 @@ public abstract class StatusEffect extends Effect {
         this.stacks = stacks;
     }
 
+    public void reduceStacks() {
+        if (stacks > 0) stacks--;
+    }
+
+    public int getStacks() {
+        return stacks;
+    }
+
     @Override
-    public void apply(Card.TargetMode targetMode, Entity target) {
+    public void apply(Card.TargetMode targetMode, Entity caster, Entity target) {
         apply(target);
     }
 
-    public abstract void apply(Entity owner);
+    public abstract void apply(Entity target);
 
     public EffectStacking getStacking() {
         return STACKING;

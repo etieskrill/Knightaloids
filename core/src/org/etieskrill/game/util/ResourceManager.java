@@ -2,6 +2,7 @@ package org.etieskrill.game.util;
 
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 public abstract class ResourceManager {
@@ -11,7 +12,7 @@ public abstract class ResourceManager {
 
     public ResourceManager(AssetManager manager) {
         this.manager = manager;
-        //the skin was moved back here, since it is so universally moved
+        //the skin was moved back here, since it is so universally used
         //TODO think about what to do with the skin/s
         manager.load("skins/default/skin/uiskin.json", Skin.class);
         loadResources();
@@ -68,6 +69,8 @@ public abstract class ResourceManager {
             manager.load("background_tundra.png", Texture.class);
             manager.load("knight_idle_1.png", Texture.class);
             manager.load("knight_idle_2.png", Texture.class);
+            manager.load("entity/enemy/goblin/idle.png", Texture.class);
+            manager.load("entity/enemy/skeleton/idle.png", Texture.class);
         }
     }
 

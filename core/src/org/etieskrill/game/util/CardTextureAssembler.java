@@ -60,7 +60,7 @@ public class CardTextureAssembler {
         if (skin == null) skin = res.get("skins/default/skin/uiskin.json");
         if (fb == null) fb = new FrameBuffer(Pixmap.Format.RGBA8888,
                 WIDTH, HEIGHT, false);
-        System.out.println("Fb size: " + fb.getWidth() + " " + fb.getHeight());
+        //System.out.println("Fb size: " + fb.getWidth() + " " + fb.getHeight());
 
         fb.begin();
 
@@ -69,8 +69,8 @@ public class CardTextureAssembler {
 
         batch.begin();
         Texture tex = res.get("parchment.png", Texture.class);
-        System.out.println("Tex size: " + tex.getWidth() + " " + tex.getHeight());
-        System.out.println("TexData size: " + tex.getTextureData().getWidth() + " " + tex.getTextureData().getHeight());
+        //System.out.println("Tex size: " + tex.getWidth() + " " + tex.getHeight());
+        //System.out.println("TexData size: " + tex.getTextureData().getWidth() + " " + tex.getTextureData().getHeight());
         batch.draw(tex, 0, 0);
         BitmapFont font = new BitmapFont(); //skin.getFont("default-font");
         //font.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
@@ -85,7 +85,7 @@ public class CardTextureAssembler {
         Pixmap pixmap = new Pixmap(WIDTH, HEIGHT, Pixmap.Format.RGBA8888);
         ByteBuffer buf = pixmap.getPixels();
         Gdx.gl.glReadPixels(0, 0, WIDTH, HEIGHT, GL20.GL_RGBA, GL20.GL_UNSIGNED_BYTE, buf);
-        System.out.println("Pixmap size: " + pixmap.getWidth() + " " + pixmap.getHeight());
+        //System.out.println("Pixmap size: " + pixmap.getWidth() + " " + pixmap.getHeight());
 
         fb.end();
 

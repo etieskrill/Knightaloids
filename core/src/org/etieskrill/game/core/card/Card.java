@@ -8,12 +8,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 
-public class Card {
-
-    /*private enum CardType { //have inheritance solve this distinction
-        ABILITY,
-        POWER
-    }*/
+public abstract class Card {
 
     public enum TargetMode {
         ALLY_SINGLE,
@@ -39,102 +34,38 @@ public class Card {
 
     //TODO separate card data from visual context
     private final String id;
-    private final String backgroundNinePatch;
-    private final String bannerTexture;
-    private final String title;
+    private String backgroundNinePatch;
+    private String bannerTexture;
+    private String title;
     private final int cost;
-    private final int power;
-    private final int defense;
     private final List<Effect> effects;
-    private final CardDescription description;
-    private final boolean hasFlavourText;
-    private final CardDescription flavourText;
+    private CardDescription description;
+    private boolean hasFlavourText;
+    private CardDescription flavourText;
     private final Pixmap pixmap;
     private final TargetMode targetMode;
 
-    private Card(CardBuilder builder) {
-        this.id = builder.id;
-        this.backgroundNinePatch = builder.backgroundNinePatch;
-        this.bannerTexture = builder.bannerTexture;
-        this.title = builder.title;
-        this.cost = builder.cost;
-        this.power = builder.power;
-        this.defense = builder.defense;
-        this.effects = builder.effects;
-        this.description = builder.description;
-        this.hasFlavourText = builder.hasFlavourText;
-        this.flavourText = builder.flavourText;
+    protected Card(String id, String backgroundNinePatch, String bannerTexture, String title, int cost,
+                   List<Effect> effects, CardDescription description, boolean hasFlavourText,
+                   CardDescription flavourText, TargetMode targetMode) {
+        this.id = id;
+        this.backgroundNinePatch = backgroundNinePatch;
+        this.bannerTexture = bannerTexture;
+        this.title = title;
+        this.cost = cost;
+        this.effects = effects;
+        this.description = description;
+        this.hasFlavourText = hasFlavourText;
+        this.flavourText = flavourText;
+        this.targetMode = targetMode;
 
         CardTextureAssembler assembler = CardTextureAssembler.getInstance();
         this.pixmap = assembler.get(this);
-
-        this.targetMode = builder.targetMode;
     }
 
-    public static class CardBuilder {
-        private String id;
-        private String backgroundNinePatch;
-        private String bannerTexture;
-        private String title;
-        private int cost;
-        private int power;
-        private int defense;
-        private final List<Effect> effects;
-        private CardDescription description;
-        private boolean hasFlavourText;
-        private CardDescription flavourText;
-        private final TargetMode targetMode;
-
-        public CardBuilder(String id, int cost, TargetMode targetMode, Effect... effects) {
-            this.id = id;
-            this.backgroundNinePatch = "assets/cards/background.9.png";
-            this.bannerTexture = "assets/cards/banners/" + id;
-            this.title = id;
-            this.cost = cost;
-            this.targetMode = targetMode;
-            this.effects = Arrays.asList(effects);
-        }
-
-        public void setId(String id) {
-            this.id = id;
-        }
-
-        public void setBackgroundNinePatch(String backgroundNinePatch) {
-            this.backgroundNinePatch = backgroundNinePatch;
-        }
-
-        public void setBannerTexture(String bannerTexture) {
-            this.bannerTexture = bannerTexture;
-        }
-
-        public void setTitle(String title) {
-            this.title = title;
-        }
-
-        public void setCost(int cost) {
-            this.cost = cost;
-        }
-
-        public void setPower(int power) {
-            this.power = power;
-        }
-
-        public void setDefense(int defense) {
-            this.defense = defense;
-        }
-
-        public void setDescription(CardDescription description) {
-            this.description = description;
-        }
-
-        public void setFlavourText(CardDescription flavourText) {
-            this.hasFlavourText = true;
-            this.flavourText = flavourText;
-        }
-
-        public Card build() {
-            return new Card(this);
-        }
+    public Card(String id, int cost, List<Effect> effects, TargetMode targetMode) {
+        this(id, "card/cardBaseBackground.9.png", "card/" + id + ".png", id, cost,
+                effects, null, false, null, targetMode);
     }
 
     public String getId() {
@@ -145,24 +76,28 @@ public class Card {
         return backgroundNinePatch;
     }
 
+    public void setBackgroundNinePatch(String backgroundNinePatch) {
+        this.backgroundNinePatch = backgroundNinePatch;
+    }
+
     public String getBannerTexture() {
         return bannerTexture;
+    }
+
+    public void setBannerTexture(String bannerTexture) {
+        this.bannerTexture = bannerTexture;
     }
 
     public String getTitle() {
         return title;
     }
 
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     public int getCost() {
         return cost;
-    }
-
-    public int getPower() {
-        return power;
-    }
-
-    public int getDefense() {
-        return defense;
     }
 
     public List<Effect> getEffects() {
@@ -173,12 +108,27 @@ public class Card {
         return description;
     }
 
+    public void setDescription(CardDescription description) {
+        this.description = description;
+    }
+
     public boolean hasFlavourText() {
         return hasFlavourText;
     }
 
+    public void setHasFlavourText(boolean hasFlavourText) {
+        this.hasFlavourText = hasFlavourText;
+    }
+
     public CardDescription getFlavourText() {
+        if (!hasFlavourText) throw new UnsupportedOperationException("card has no flavour text");
+
         return flavourText;
+    }
+
+    public void setFlavourText(CardDescription flavourText) {
+        this.flavourText = flavourText;
+        this.hasFlavourText = true;
     }
 
     public Pixmap getPixmap() {

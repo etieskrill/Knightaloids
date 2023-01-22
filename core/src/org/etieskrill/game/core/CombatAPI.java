@@ -1,23 +1,31 @@
 package org.etieskrill.game.core;
 
-import org.etieskrill.game.core.Entity.Entity;
+import org.etieskrill.game.core.entity.Entity;
 import org.etieskrill.game.core.card.Card;
 
 import java.util.List;
 
 public interface CombatAPI {
 
-    void setDeck(List<Card> cards);
+    void setDrawPile(List<Card> cards);
 
-    void addCard(Card card);
+    void addCardToDrawPile(Card card);
 
-    boolean removeCard(Card card);
+    void addCardToHand(Card card);
 
-    Card removeCard(int index);
+    void addCardToDiscardPile(Card card);
 
-    Card getCard(int index);
+    List<Card> getDrawPile();
 
-    List<Card> getCards();
+    void drawCardsToHand(int additionalCards);
+
+    List<Card> getHandCards();
+
+    void discardHandCards();
+
+    List<Card> getDiscardPile();
+
+    List<Card> getExilePile();
 
     boolean playCard(Card card) throws InvalidCardTargetException;
 
@@ -27,7 +35,15 @@ public interface CombatAPI {
 
     Entity selectEntity(int index);
 
-    boolean useConsumable(Consumable cons);
+    Entity getFocusedEntity();
+
+    List<Entity> getEntities();
+
+    List<Entity> getAllies();
+
+    List<Entity> getEnemies();
+
+    boolean useConsumable(Consumable consumable);
 
     Consumable useConsumable(int index);
 

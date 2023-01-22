@@ -1,22 +1,17 @@
 package org.etieskrill.game.core.effect;
 
-import org.etieskrill.game.core.Entity.AlliedEntity;
-import org.etieskrill.game.core.Entity.EnemyEntity;
-import org.etieskrill.game.core.Entity.Entity;
-import org.etieskrill.game.core.InvalidCardTargetException;
+import org.etieskrill.game.core.entity.Entity;
 import org.etieskrill.game.core.card.Card;
-
-import java.util.EnumSet;
 
 public abstract class EntityInstantEffect extends InstantEffect {
 
     @Override
-    public void apply(Card.TargetMode targetMode, Entity target) {
+    public void apply(Card.TargetMode targetMode, Entity caster, Entity target) {
         //TODO consider moving validation here from CombatAPI
 
-        apply(target);
+        apply(caster, target);
     }
 
-    public abstract void apply(Entity target);
+    public abstract void apply(Entity caster, Entity target);
 
 }
