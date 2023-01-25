@@ -1,25 +1,31 @@
 package org.etieskrill.game.core;
 
 import org.etieskrill.game.core.card.*;
+import org.etieskrill.game.core.effect.InstantEffect;
+import org.etieskrill.game.core.effect.StatusEffect;
 import org.etieskrill.game.core.entity.AlliedEntity;
 import org.etieskrill.game.core.entity.EnemyEntity;
 import org.etieskrill.game.core.entity.Entity;
 import org.etieskrill.game.core.card.Card.TargetMode;
 import org.etieskrill.game.core.effect.Effect;
+import org.etieskrill.game.core.entity.Player;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 public class CombatAPIImpl implements CombatAPI {
 
     public static final int DEFAULT_NUMBER_CARDS_DRAWN = 5;
+
+    private final Logger logger = Logger.getLogger(getClass().getSimpleName());
 
     private final List<Card> drawPile;
     private final List<Card> handCards;
     private final List<Card> discardPile;
     private final List<Card> exilePile;
 
-    private final List<Entity> allies;
-    private final List<Entity> enemies;
+    private final List<AlliedEntity> allies;
+    private final List<EnemyEntity> enemies;
 
     private Entity focusedEntity;
 
@@ -120,11 +126,24 @@ public class CombatAPIImpl implements CombatAPI {
         Card card = handCards.get(index);
         if (card instanceof AbilityCard) caster = focusedEntity;
         else if (card instanceof SkillCard || card instanceof PowerCard) caster = ((EntityCard)card).getOwner();
+        if (caster != null) {
+            if (caster instanceof Player player) {
+                if (!player.useMana(card.getCost())) {
+                    logger.info("card could not be played because card cost was " + card.getCost() +
+                            ", but player only had " + player.getMana() + " mana");
+                    throw new CardCostTooHighException();
+                }
+            } else if (caster instanceof AlliedEntity ally) {
+                if (!ally.useMana(card.getCost())) {
+                    logger.info("card could not be played because card cost was " + card.getCost() +
+                            ", but ally only had " + ally.getMana() + " mana");
+                    throw new CardCostTooHighException();
+                }
+            }
+        }
 
         TargetMode targetMode = handCards.get(index).getTargetMode();
-        EnumSet<TargetMode> enemyTargetModes = EnumSet.of(TargetMode.ENEMY_SINGLE, TargetMode.ENEMY_ALL,
-                TargetMode.ENEMY_SUMMON_FRONT, TargetMode.ENEMY_SUMMON_BEHIND); //TODO seriously, java?!
-        boolean targetModeIsEnemy = enemyTargetModes.contains(targetMode);
+        boolean targetModeIsEnemy = TargetMode.getEnemyTargetModes().contains(targetMode);
         if (focusedEntity instanceof AlliedEntity && targetModeIsEnemy)
             throw new InvalidCardTargetException("card with allied target mode cannot be played on enemies");
         else if (focusedEntity instanceof EnemyEntity && !targetModeIsEnemy)
@@ -136,9 +155,19 @@ public class CombatAPIImpl implements CombatAPI {
 
         Card cardPlayed = handCards.remove(index);
         discardPile.add(cardPlayed);
-        for (Effect effect : cardPlayed.getEffects()) effect.apply(cardPlayed.getTargetMode(), caster, focusedEntity);
+        for (Effect effect : cardPlayed.getEffects()) {
+            if (effect instanceof InstantEffect)
+                effect.apply(cardPlayed.getTargetMode(), caster, focusedEntity);
+            else if (effect instanceof StatusEffect statusEffect)
+                focusedEntity.addStatusEffect(statusEffect);
+        }
 
         return cardPlayed;
+    }
+
+    @Override
+    public void doEnemyTurn() {
+        for (EnemyEntity enemy : enemies) enemy.act();
     }
 
     @Override
@@ -174,13 +203,33 @@ public class CombatAPIImpl implements CombatAPI {
     }
 
     @Override
-    public List<Entity> getAllies() {
+    public void setEntities(Entity... entities) {
+        for (Entity entity : entities) {
+            if (entity instanceof AlliedEntity ally) allies.add(ally);
+            else if (entity instanceof EnemyEntity enemy) enemies.add(enemy);
+            else throw new UnsupportedOperationException(
+                    "entity type " + entity.getClass().getSimpleName() + " could not be classified");
+        }
+    }
+
+    @Override
+    public List<AlliedEntity> getAllies() {
         return Collections.unmodifiableList(allies);
     }
 
     @Override
-    public List<Entity> getEnemies() {
+    public List<EnemyEntity> getEnemies() {
         return Collections.unmodifiableList(enemies);
+    }
+
+    @Override
+    public void setPlayer(Player player) {
+
+    }
+
+    @Override
+    public Player getPlayer() {
+        return null;
     }
 
     @Override

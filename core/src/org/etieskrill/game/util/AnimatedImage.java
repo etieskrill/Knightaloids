@@ -11,7 +11,7 @@ import java.util.Random;
 
 public class AnimatedImage extends Image {
 
-    public static final float DEFAULT_FRAME_DURATION = 0.16f;
+    public static final float DEFAULT_LOOP_DURATION = 0.64f;
 
     private final Animation<TextureRegion> animation;
 
@@ -40,7 +40,7 @@ public class AnimatedImage extends Image {
                 sequence[index++].flip(true, false);
             }
         }
-        Animation<TextureRegion> animation = new Animation<>(DEFAULT_FRAME_DURATION, sequence);
+        Animation<TextureRegion> animation = new Animation<>(DEFAULT_LOOP_DURATION / (H_FRAMES * V_FRAMES), sequence);
         return new AnimatedImage(animation, true);
     }
 

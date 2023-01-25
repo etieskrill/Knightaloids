@@ -3,7 +3,7 @@ package org.etieskrill.game.core.effect;
 import org.etieskrill.game.core.entity.Entity;
 import org.etieskrill.game.core.card.Card;
 
-public abstract class StatusEffect extends Effect {
+public abstract class StatusEffect implements Effect {
 
     public enum EffectStacking {
         INTENSITY,
@@ -25,6 +25,12 @@ public abstract class StatusEffect extends Effect {
         this.STACKING = stacking;
         this.APPLICATION = application;
         this.stacks = stacks;
+    }
+
+    public abstract StatusEffect get();
+
+    public void addStacks(int stacks) {
+        this.stacks += stacks;
     }
 
     public void reduceStacks() {
@@ -49,5 +55,7 @@ public abstract class StatusEffect extends Effect {
     public EffectApplication getApplication() {
         return APPLICATION;
     }
+
+    public abstract String getAbbreviation();
 
 }

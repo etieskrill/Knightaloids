@@ -3,7 +3,7 @@ package org.etieskrill.game.core.effect;
 import org.etieskrill.game.core.entity.Entity;
 import org.etieskrill.game.core.card.Card;
 
-public abstract class PlayerInstantEffect extends InstantEffect {
+public abstract class PlayerInstantEffect implements InstantEffect {
 
     @Override
     public void apply(Card.TargetMode targetMode, Entity caster, Entity target) {

@@ -15,6 +15,11 @@ public abstract class EntityCard extends Card {
         this.owner = owner;
     }
 
+    public EntityCard(String id, int cost, List<Effect> effects, TargetMode targetMode, Entity owner) {
+        super(id, cost, effects, targetMode);
+        this.owner = owner;
+    }
+
     public Entity getOwner() {
         return owner;
     }

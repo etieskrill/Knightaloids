@@ -66,9 +66,10 @@ public abstract class ResourceManager {
 
         @Override
         protected void loadResources() {
+            manager.load("entity/entity_sprite_error.png", Texture.class);
             manager.load("background_tundra.png", Texture.class);
-            manager.load("knight_idle_1.png", Texture.class);
-            manager.load("knight_idle_2.png", Texture.class);
+            manager.load("focus_indicator.png", Texture.class);
+            manager.load("entity/ally/knight/idle.png", Texture.class);
             manager.load("entity/enemy/goblin/idle.png", Texture.class);
             manager.load("entity/enemy/skeleton/idle.png", Texture.class);
         }

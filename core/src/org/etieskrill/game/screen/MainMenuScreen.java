@@ -8,20 +8,23 @@ import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.Touchable;
-import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.actions.AlphaAction;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Stack;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.sun.tools.javac.Main;
+import com.badlogic.gdx.utils.Align;
 import org.etieskrill.game.App;
 import org.etieskrill.game.core.CombatAPI;
 import org.etieskrill.game.core.CombatAPIImpl;
 import org.etieskrill.game.core.InvalidCardTargetException;
 import org.etieskrill.game.core.card.BlockAbilityCard;
 import org.etieskrill.game.core.card.Card;
+import org.etieskrill.game.core.card.CardCostTooHighException;
 import org.etieskrill.game.core.card.SlashAbilityCard;
-import org.etieskrill.game.core.entity.Entity;
-import org.etieskrill.game.core.entity.Goblin;
-import org.etieskrill.game.core.entity.Skeleton;
+import org.etieskrill.game.core.entity.*;
+import org.etieskrill.game.screen.actions.HitAction;
 import org.etieskrill.game.util.AnimatedImage;
 
 import java.util.ArrayList;
@@ -41,12 +44,22 @@ public class MainMenuScreen extends BaseScreen {
 
     private CombatAPI mission;
     private List<HandCard> handCards;
-    private boolean handCardsChanged;
+    private boolean handCardsChanged = true;
     private HandCard prevFocus;
+    private EntityContext.EntityContextFactory contextFactory;
+    private List<EntityContext> allies;
+    private List<EntityContext> enemies;
+    private boolean entitiesChanged = true;
 
     private Label drawPileCounterLabel;
     private Label discardPileCounterLabel;
     private Label exilePileCounterLabel;
+
+    private Table alliesTable;
+    private Table enemiesTable;
+
+    private Image focusIndicator;
+    private Entity previousFocusedEntity;
 
     public MainMenuScreen(App app) {
         super(app);
@@ -54,15 +67,27 @@ public class MainMenuScreen extends BaseScreen {
 
     @Override
     protected void init() {
+        handCards = new ArrayList<>();
+        allies = new ArrayList<>();
+        enemies = new ArrayList<>();
+
         mission = new CombatAPIImpl();
+
         stage.addActor(new Image(manager.get("background_tundra.png", Texture.class)));
-        Animation<TextureRegion> animation = new Animation<>(0.6f,
-                new TextureRegion(manager.get("knight_idle_1.png", Texture.class)),
-                new TextureRegion(manager.get("knight_idle_2.png", Texture.class)));
-        animation.setPlayMode(Animation.PlayMode.LOOP);
-        AnimatedImage knight = new AnimatedImage(animation, true);
-        knight.setSize(200, 200);
-        stage.addActor(knight);
+
+        List<Card> initialCards = new ArrayList<>();
+
+        for (int i = 0; i < 4; i++) {
+            initialCards.add(new SlashAbilityCard());
+            initialCards.add(new BlockAbilityCard());
+        }
+
+        Knight knight = new Knight();
+        addEntity(knight);
+        //TODO automate this, but beware; only do this once at beginning of combat
+        initialCards.addAll(knight.getMoveSet());
+
+        mission.setDrawPile(initialCards);
 
         /*knight.addAction(sequence(
                 moveTo(500, 0, 0.5f, Interpolation.pow3In),
@@ -70,53 +95,35 @@ public class MainMenuScreen extends BaseScreen {
                 moveTo(0, 0, 0.5f, Interpolation.pow3Out)
         ));*/
 
-        EntityContext.EntityContextFactory contextFactory = new EntityContext.EntityContextFactory(manager);
+        //knight.addAction(hitAction);
 
-        AnimatedImage goblinActor = AnimatedImage.fromPackedTexture(
-                manager.get("entity/enemy/goblin/idle.png", Texture.class), 4, 1);
-        goblinActor.setTouchable(Touchable.disabled);
-        EntityContext goblin = contextFactory.getFor(new Goblin(), goblinActor);
+        TextureRegion _focusIndicator = new TextureRegion(manager.get("focus_indicator.png", Texture.class));
+        _focusIndicator.flip(false, true);
+        focusIndicator = new Image(_focusIndicator);
+        focusIndicator.setScale(2.5f);
+        focusIndicator.setVisible(false);
+        stage.addActor(focusIndicator);
 
-        goblin.setPosition(700, 200);
-        goblin.addListener(new EntitySelectorListener(goblin.getEntity(), mission));
-        stage.addActor(goblin);
-
-        AnimatedImage skeletonActor = AnimatedImage.fromPackedTexture(
-                manager.get("entity/enemy/skeleton/idle.png", Texture.class), 4, 1);
-        skeletonActor.setTouchable(Touchable.disabled);
-        EntityContext skeleton = contextFactory.getFor(new Skeleton(), skeletonActor);
-
-        skeleton.setPosition(900, 200);
-        skeleton.addListener(new EntitySelectorListener(skeleton.getEntity(), mission));
-        stage.addActor(skeleton);
-
-        //Card handCard1 = new Card.CardBuilder("attack", 1, TargetMode.ENEMY_SINGLE, new AttackEffect()).build();
-        Card handCard1 = new SlashAbilityCard();
-        Card handCard2 = new SlashAbilityCard();
-        Card handCard3 = new SlashAbilityCard();
-        Card handCard4 = new SlashAbilityCard();
-        //Card handCard2 = new Card.CardBuilder("defend", 1, TargetMode.ALLY_SINGLE, new AttackEffect()).build();
-        Card handCard5 = new BlockAbilityCard();
-        Card handCard6 = new BlockAbilityCard();
-        Card handCard7 = new BlockAbilityCard();
-        Card handCard8 = new BlockAbilityCard();
-        /*Card handCard3 = new Card.CardBuilder("summon", 1, TargetMode.ALLY_SUMMON_FRONT, new AttackEffect()).build();
-        Card handCard4 = new Card.CardBuilder("heal", 1, TargetMode.ALLY_SINGLE, new AttackEffect()).build();
-        Card handCard5 = new Card.CardBuilder("recuperate", 1, TargetMode.PLAYER, new AttackEffect()).build();*/
+        mission.setEntities(new Goblin(), new Skeleton());
 
         super.addInputProcessor(0, new CardSelectorResetListener()); //TODO hack to make cards "loose focus"
 
-        mission.setDrawPile(List.of(handCard1, handCard2, handCard3, handCard4, handCard5, handCard6, handCard7, handCard8));
         mission.drawCardsToHand(0);
 
-        handCards = new ArrayList<>();
         for (Card card : mission.getHandCards()) {
             addHandCard(card);
         }
 
+        for (Entity entity : mission.getEntities()) {
+            addEntity(entity);
+        }
+
         drawPileCounterLabel = new Label("G:0", skin);
+        drawPileCounterLabel.setScale(3f);
         discardPileCounterLabel = new Label("D:0", skin);
+        discardPileCounterLabel.setScale(3f);
         exilePileCounterLabel = new Label("E:0", skin);
+        exilePileCounterLabel.setScale(3f);
 
         Stack drawPileCounter = new Stack(new Image(), drawPileCounterLabel);
         Stack discardPileCounter = new Stack(new Image(), discardPileCounterLabel);
@@ -131,6 +138,18 @@ public class MainMenuScreen extends BaseScreen {
         bottom.add(exilePileCounter).right().top().pad(50f).padRight(80f);
 
         uiStage.addActor(bottom);
+
+        alliesTable = new Table();
+        alliesTable.setPosition(50, 150);
+        alliesTable.setSize(600, 300);
+        alliesTable.center();
+        stage.addActor(alliesTable);
+
+        enemiesTable = new Table();
+        enemiesTable.setPosition(650, 150);
+        enemiesTable.setSize(600, 300);
+        enemiesTable.center();
+        stage.addActor(enemiesTable);
     }
 
     private static class CardSelectorResetListener extends InputAdapter {
@@ -164,7 +183,7 @@ public class MainMenuScreen extends BaseScreen {
                     screen.removeHandCard(handCard.getCard());
                     setFocus(null);
                     return;
-                } catch (InvalidCardTargetException e) {
+                } catch (InvalidCardTargetException | CardCostTooHighException e) {
                     logger.info("Attempt to play card failed: " + e.getMessage());
                     //TODO visual feedback
                 }
@@ -202,7 +221,6 @@ public class MainMenuScreen extends BaseScreen {
         @Override
         public void clicked(InputEvent event, float x, float y) {
             mission.selectEntity(entity);
-            System.out.println(mission.getFocusedEntity());
         }
     }
 
@@ -229,13 +247,12 @@ public class MainMenuScreen extends BaseScreen {
 
     private void addHandCards(Card... cards) {
         for (Card card : cards) addHandCard(card);
-        handCardsChanged = true;
     }
 
     private void addHandCard(Card card) {
         TextureRegion region = new TextureRegion(new Texture(card.getPixmap()));
         region.flip(false, true);
-        Image image = new Image(manager.get("parchment.png", Texture.class) /*region*/);
+        Image image = new Image(/*manager.get("parchment.png", Texture.class)*/ region);
         image.setSize(CARD_WIDTH, CARD_HEIGHT);
         HandCard handCard = new HandCard(card, image);
         image.addListener(new CardSelectorListener(handCard, mission, this));
@@ -247,7 +264,6 @@ public class MainMenuScreen extends BaseScreen {
 
     private void removeHandCards(Card... cards) {
         for (Card card : cards) removeHandCard(card);
-        handCardsChanged = true;
     }
 
     private void removeHandCard(Card card) {
@@ -262,6 +278,54 @@ public class MainMenuScreen extends BaseScreen {
         }
 
         handCardsChanged = true;
+    }
+
+    private static class EntityEffectListener extends Entity.EntityChangeAdapter {
+        private final EntityContext context;
+
+        public EntityEffectListener(EntityContext context) {
+            this.context = context;
+        }
+
+        @Override
+        public void receivedHealthDamage() {
+            context.getStageActor().addAction(HitAction.hitAction);
+        }
+
+        @Override
+        public void receivedBlockDamage() {
+        }
+    }
+
+    private void addEntities(Entity... entities) {
+        for (Entity entity : entities) addEntity(entity);
+    }
+
+    private void addEntity(Entity entity) {
+        if (contextFactory == null) contextFactory = new EntityContext.EntityContextFactory(manager);
+
+        EntityContext entityContext = contextFactory.getFor(entity);
+        entityContext.getStageActor().addAction(HitAction.hitAction);
+        if (entity instanceof AlliedEntity) allies.add(entityContext);
+        else enemies.add(entityContext);
+
+        entityContext.addListener(new EntitySelectorListener(entity, mission));
+        entityContext.getEntity().addChangeListener(new EntityEffectListener(entityContext));
+        stage.addActor(entityContext);
+
+        entitiesChanged = true;
+    }
+
+    private void removeEntity(Entity entity) {
+        EntityContext entityContext = findEntityContext(entity);
+        if (entityContext != null) {
+            AnimatedImage actor = entityContext.getStageActor();
+            actor.clear();
+            actor.remove();
+            allies.remove(entityContext);
+        }
+
+        entitiesChanged = true;
     }
 
     @Override
@@ -307,11 +371,35 @@ public class MainMenuScreen extends BaseScreen {
         discardPileCounterLabel.setText("D:" + mission.getDiscardPile().size());
         exilePileCounterLabel.setText("E:" + mission.getExilePile().size());
 
-        if (mission.getFocusedEntity() != null); //TODO add focus indicator
+        Entity focusedEntity = mission.getFocusedEntity();
+        if (focusedEntity != null) {
+            if (focusedEntity != previousFocusedEntity) {
+                focusIndicator.setVisible(true);
+                EntityContext context = findEntityContext(focusedEntity);
+                if (context == null) throw new UnsupportedOperationException("entity has no stage context");
+                Vector2 pos = new Vector2(context.getX() + (context.getWidth() / 2f) - (focusIndicator.getWidth()), 0);
+                if (focusedEntity instanceof AlliedEntity) pos.add(alliesTable.getX(), alliesTable.getY(Align.top));
+                else pos.add(enemiesTable.getX(Align.left), enemiesTable.getY(Align.top));
+                focusIndicator.addAction(moveTo(pos.x, pos.y, 0.15f, Interpolation.pow2));
+                previousFocusedEntity = focusedEntity;
+            }
+        } else focusIndicator.setVisible(false);
 
         if (handCardsChanged) {
             updateHandCardPositions();
+            handCardsChanged = false;
         }
+
+        if (entitiesChanged) {
+            updateEntitiesDisplayed();
+            entitiesChanged = false;
+        }
+    }
+    
+    private EntityContext findEntityContext(Entity entity) {
+        for (EntityContext context : allies) if (context.getEntity() == entity) return context;
+        for (EntityContext context : enemies) if (context.getEntity() == entity) return context;
+        return null;
     }
 
     private void updateHandCardPositions() {
@@ -323,6 +411,14 @@ public class MainMenuScreen extends BaseScreen {
             handCards.get(i).getImage().setPosition(
                     i * DECK_CARD_DISTANCE + DECK_POSITION.x, DECK_POSITION.y);
         }
+    }
+
+    private void updateEntitiesDisplayed() {
+        alliesTable.clearChildren();
+        enemiesTable.clearChildren();
+
+        for (EntityContext context : allies) alliesTable.add(context).center();
+        for (EntityContext context : enemies) enemiesTable.add(context).left();
     }
 
     @Override

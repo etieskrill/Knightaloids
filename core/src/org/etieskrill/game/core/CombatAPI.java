@@ -1,7 +1,11 @@
 package org.etieskrill.game.core;
 
+import org.etieskrill.game.core.card.CardCostTooHighException;
+import org.etieskrill.game.core.entity.AlliedEntity;
+import org.etieskrill.game.core.entity.EnemyEntity;
 import org.etieskrill.game.core.entity.Entity;
 import org.etieskrill.game.core.card.Card;
+import org.etieskrill.game.core.entity.Player;
 
 import java.util.List;
 
@@ -27,9 +31,11 @@ public interface CombatAPI {
 
     List<Card> getExilePile();
 
-    boolean playCard(Card card) throws InvalidCardTargetException;
+    boolean playCard(Card card) throws InvalidCardTargetException, CardCostTooHighException;
 
     Card playCard(int index) throws InvalidCardTargetException;
+
+    void doEnemyTurn();
 
     boolean selectEntity(Entity entity);
 
@@ -39,9 +45,15 @@ public interface CombatAPI {
 
     List<Entity> getEntities();
 
-    List<Entity> getAllies();
+    void setEntities(Entity... entities);
 
-    List<Entity> getEnemies();
+    List<AlliedEntity> getAllies();
+
+    List<EnemyEntity> getEnemies();
+
+    void setPlayer(Player player);
+
+    Player getPlayer();
 
     boolean useConsumable(Consumable consumable);
 

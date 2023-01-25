@@ -12,6 +12,9 @@ public abstract class Card {
 
     public enum TargetMode {
         ALLY_SINGLE,
+        ALLY_FRONT,
+        ALLY_BACK,
+        ALLY_RANDOM,
         ALLY_ALL,
         ENEMY_SINGLE,
         ENEMY_ALL,
@@ -27,8 +30,23 @@ public abstract class Card {
                 ENEMY_ALL, ALLY_SUMMON_FRONT, ALLY_SUMMON_BEHIND,
                 ENEMY_SUMMON_FRONT, ENEMY_SUMMON_BEHIND);
 
+        private static final EnumSet<TargetMode> enemyTargetModes =
+                EnumSet.of(TargetMode.ENEMY_SINGLE, TargetMode.ENEMY_ALL,
+                        TargetMode.ENEMY_SUMMON_FRONT, TargetMode.ENEMY_SUMMON_BEHIND);
+
+        private static final EnumSet<TargetMode> casterTargetModes =
+                EnumSet.of(ALLY_SUMMON_FRONT, ALLY_SUMMON_BEHIND, ENEMY_SUMMON_FRONT, ENEMY_SUMMON_BEHIND, CASTER);
+
         public static EnumSet<TargetMode> getEntityTargetModes() {
             return entityTargetModes.clone(); //TODO is there a way to make immutable?
+        }
+
+        public static EnumSet<TargetMode> getEnemyTargetModes() {
+            return enemyTargetModes;
+        }
+
+        public static EnumSet<TargetMode> getCasterTargetModes() {
+            return casterTargetModes;
         }
     }
 

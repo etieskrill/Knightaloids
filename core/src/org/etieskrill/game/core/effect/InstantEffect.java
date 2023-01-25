@@ -1,5 +1,5 @@
 package org.etieskrill.game.core.effect;
 
-public abstract class InstantEffect extends Effect {
+public interface InstantEffect extends Effect {
 }
 

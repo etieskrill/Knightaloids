@@ -77,6 +77,7 @@ public class CardTextureAssembler {
         font.getData().setScale(4);
         font.setColor(Color.RED);
         font.draw(batch, card.getTitle(), 20, 550);
+        font.draw(batch, Integer.toString(card.getCost()), 10, HEIGHT);
         batch.end();
 
         //TextureRegion fbTr = new TextureRegion(fb.getColorBufferTexture());

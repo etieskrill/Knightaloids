@@ -1,28 +1,25 @@
 package org.etieskrill.game.core.entity;
 
-import org.etieskrill.game.core.card.Card;
-import org.etieskrill.game.core.effect.StatusEffect;
+import org.etieskrill.game.core.card.OverheadSwingSkillCard;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public class Knight extends AlliedEntity {
 
-    public Knight(List<Card> moveSet, float baseHealth, List<StatusEffect> statusEffects) {
-        super(moveSet, baseHealth, statusEffects);
-    }
-
-    @Override
-    protected void doMove(int move) {
+    public Knight() {
+        super(new ArrayList<>(), 3, 100, new ArrayList<>());
+        moveSet.add(new OverheadSwingSkillCard(this));
+        moveSet.add(new OverheadSwingSkillCard(this));
     }
 
     @Override
     public String getName() {
-        return null;
+        return "knight";
     }
 
     @Override
     public String getDisplayName() {
-        return null;
+        return "Knight";
     }
 
 

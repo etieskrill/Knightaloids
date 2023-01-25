@@ -11,4 +11,8 @@ public abstract class SkillCard extends EntityCard {
         super(id, backgroundNinePatch, bannerTexture, title, cost, effects, description, hasFlavourText, flavourText, targetMode, owner);
     }
 
+    public SkillCard(String id, int cost, List<Effect> effects, TargetMode targetMode, Entity owner) {
+        super(id, cost, effects, targetMode, owner);
+    }
+
 }
