@@ -11,10 +11,11 @@ public class Player extends Entity {
     private int mana;
     private String userName;
 
-    public Player(List<Card> moveSet, int baseMana, int baseHealth, List<StatusEffect> statusEffects) {
+    public Player(List<Card> moveSet, int baseMana, int baseHealth, List<StatusEffect> statusEffects, String name) {
         super(moveSet, baseHealth, statusEffects);
         this.baseMana = baseMana;
         this.mana = baseMana;
+        this.userName = name;
     }
 
     @Override
@@ -26,11 +27,12 @@ public class Player extends Entity {
         return mana;
     }
 
-    public boolean useMana(int amount) {
-        if (mana - amount <= 0) return false;
+    public boolean hasMana(int amount) {
+        return mana - amount >= 0;
+    }
 
+    public void useMana(int amount) {
         this.mana -= amount;
-        return true;
     }
 
     @Override

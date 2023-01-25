@@ -5,13 +5,16 @@ import org.etieskrill.game.core.entity.Entity;
 
 public class BleedingStatusEffect extends StatusEffect {
 
-    public BleedingStatusEffect() {
+    private final float magnitude;
+
+    public BleedingStatusEffect(float magnitude) {
         super(EffectStacking.INTENSITY, EffectApplication.BEFORE_TURN, 6);
+        this.magnitude = magnitude;
     }
 
     @Override
     public StatusEffect get() {
-        return new BleedingStatusEffect();
+        return new BleedingStatusEffect(magnitude);
     }
 
     @Override

@@ -24,6 +24,8 @@ public class CombatAPIImpl implements CombatAPI {
     private final List<Card> discardPile;
     private final List<Card> exilePile;
 
+    private Player player;
+
     private final List<AlliedEntity> allies;
     private final List<EnemyEntity> enemies;
 
@@ -78,7 +80,8 @@ public class CombatAPIImpl implements CombatAPI {
     }
 
     private void refreshDrawPile() {
-        if (discardPile.size() == 0) throw new IllegalStateException("discard pile contains no cards to reshuffle");
+        if ((drawPile.size() | discardPile.size()) == 0)
+            throw new IllegalStateException("neither draw pile nor discard pile contains any cards to reshuffle");
         drawPile.addAll(discardPile);
         Collections.shuffle(drawPile);
     }
@@ -128,13 +131,13 @@ public class CombatAPIImpl implements CombatAPI {
         else if (card instanceof SkillCard || card instanceof PowerCard) caster = ((EntityCard)card).getOwner();
         if (caster != null) {
             if (caster instanceof Player player) {
-                if (!player.useMana(card.getCost())) {
+                if (!player.hasMana(card.getCost())) {
                     logger.info("card could not be played because card cost was " + card.getCost() +
                             ", but player only had " + player.getMana() + " mana");
                     throw new CardCostTooHighException();
                 }
             } else if (caster instanceof AlliedEntity ally) {
-                if (!ally.useMana(card.getCost())) {
+                if (!ally.hasMana(card.getCost())) {
                     logger.info("card could not be played because card cost was " + card.getCost() +
                             ", but ally only had " + ally.getMana() + " mana");
                     throw new CardCostTooHighException();
@@ -161,6 +164,9 @@ public class CombatAPIImpl implements CombatAPI {
             else if (effect instanceof StatusEffect statusEffect)
                 focusedEntity.addStatusEffect(statusEffect);
         }
+
+        if (caster instanceof Player player) player.useMana(card.getCost());
+        else if (caster instanceof AlliedEntity entity) entity.useMana(card.getCost());
 
         return cardPlayed;
     }
@@ -224,12 +230,12 @@ public class CombatAPIImpl implements CombatAPI {
 
     @Override
     public void setPlayer(Player player) {
-
+        this.player = player;
     }
 
     @Override
     public Player getPlayer() {
-        return null;
+        return player;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package org.etieskrill.game.screen;
 
 import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -9,10 +10,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.actions.AlphaAction;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Stack;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import org.etieskrill.game.App;
@@ -50,6 +48,8 @@ public class MainMenuScreen extends BaseScreen {
     private List<EntityContext> allies;
     private List<EntityContext> enemies;
     private boolean entitiesChanged = true;
+    private PlayerContext.PlayerContextFactory playerContextFactory;
+    private PlayerContext playerContext;
 
     private Label drawPileCounterLabel;
     private Label discardPileCounterLabel;
@@ -60,6 +60,8 @@ public class MainMenuScreen extends BaseScreen {
 
     private Image focusIndicator;
     private Entity previousFocusedEntity;
+
+    private TextButton nextTurnButton;
 
     public MainMenuScreen(App app) {
         super(app);
@@ -74,6 +76,8 @@ public class MainMenuScreen extends BaseScreen {
         mission = new CombatAPIImpl();
 
         stage.addActor(new Image(manager.get("background_tundra.png", Texture.class)));
+
+        mission.setPlayer(new Player(null, 4, 100, null, "hodekoboud"));
 
         List<Card> initialCards = new ArrayList<>();
 
@@ -97,6 +101,13 @@ public class MainMenuScreen extends BaseScreen {
 
         //knight.addAction(hitAction);
 
+        if (playerContextFactory == null) {
+            playerContextFactory = new PlayerContext.PlayerContextFactory(manager);
+        }
+        playerContext = playerContextFactory.getFor(mission.getPlayer());
+        playerContext.setPosition(playerContext.getWidth(), stage.getHeight() - playerContext.getHeight());
+        stage.addActor(playerContext);
+
         TextureRegion _focusIndicator = new TextureRegion(manager.get("focus_indicator.png", Texture.class));
         _focusIndicator.flip(false, true);
         focusIndicator = new Image(_focusIndicator);
@@ -118,12 +129,14 @@ public class MainMenuScreen extends BaseScreen {
             addEntity(entity);
         }
 
-        drawPileCounterLabel = new Label("G:0", skin);
-        drawPileCounterLabel.setScale(3f);
-        discardPileCounterLabel = new Label("D:0", skin);
-        discardPileCounterLabel.setScale(3f);
-        exilePileCounterLabel = new Label("E:0", skin);
-        exilePileCounterLabel.setScale(3f);
+        Label.LabelStyle style = new Label.LabelStyle(manager.getLargeFont(), null);
+
+        drawPileCounterLabel = new Label("G:0", style);
+        drawPileCounterLabel.setFontScale(1f);
+        discardPileCounterLabel = new Label("D:0", style);
+        discardPileCounterLabel.setFontScale(1f);
+        exilePileCounterLabel = new Label("E:0", style);
+        exilePileCounterLabel.setFontScale(1f);
 
         Stack drawPileCounter = new Stack(new Image(), drawPileCounterLabel);
         Stack discardPileCounter = new Stack(new Image(), discardPileCounterLabel);
@@ -150,6 +163,19 @@ public class MainMenuScreen extends BaseScreen {
         enemiesTable.setSize(600, 300);
         enemiesTable.center();
         stage.addActor(enemiesTable);
+
+        nextTurnButton = new TextButton("Next Turn", skin);
+        nextTurnButton.setPosition(uiStage.getWidth() / 2f, uiStage.getHeight(), Align.top);
+        //nextTurnButton.setSize(200f, 50f);
+        nextTurnButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                mission.discardHandCards();
+                mission.doEnemyTurn();
+                mission.drawCardsToHand(0);
+            }
+        });
+        uiStage.addActor(nextTurnButton);
     }
 
     private static class CardSelectorResetListener extends InputAdapter {
@@ -289,7 +315,20 @@ public class MainMenuScreen extends BaseScreen {
 
         @Override
         public void receivedHealthDamage() {
-            context.getStageActor().addAction(HitAction.hitAction);
+            System.out.println("before: " + context.getStageActor().getActions());
+            context.getStageActor().addAction(
+                    sequence(
+                            parallel(
+                                    moveBy(1, 0, 0.2f, new Interpolation.ElasticOut(1.2f, 10, 3, 15)),
+                                    color(Color.RED, 0.1f)
+                            ),
+                            parallel(
+                                    moveBy(-1, 0),
+                                    color(Color.WHITE, 0.1f)
+                            )
+                    )
+            );
+            System.out.println("after: " + context.getStageActor().getActions());
         }
 
         @Override
@@ -305,7 +344,6 @@ public class MainMenuScreen extends BaseScreen {
         if (contextFactory == null) contextFactory = new EntityContext.EntityContextFactory(manager);
 
         EntityContext entityContext = contextFactory.getFor(entity);
-        entityContext.getStageActor().addAction(HitAction.hitAction);
         if (entity instanceof AlliedEntity) allies.add(entityContext);
         else enemies.add(entityContext);
 

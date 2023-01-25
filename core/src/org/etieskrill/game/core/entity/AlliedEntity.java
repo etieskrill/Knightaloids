@@ -25,11 +25,12 @@ public abstract class AlliedEntity extends NonPlayerEntity {
         return mana;
     }
 
-    public boolean useMana(int amount) {
-        if (mana - amount <= 0) return false;
+    public boolean hasMana(int amount) {
+        return mana - amount >= 0;
+    }
 
+    public void useMana(int amount) {
         this.mana -= amount;
-        return true;
     }
 
 }

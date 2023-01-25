@@ -11,8 +11,9 @@ public class OverheadSwingSkillCard extends SkillCard {
 
     public OverheadSwingSkillCard(Entity owner) {
         super("base_overhead_swing", 2,
-                List.of(new AttackEffect(12), new BleedingStatusEffect()),
+                List.of(new AttackEffect(12), new BleedingStatusEffect(6)),
                 TargetMode.ENEMY_SINGLE, owner);
+        setTitle("Overhead Swing");
     }
 
 }

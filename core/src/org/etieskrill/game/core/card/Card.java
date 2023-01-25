@@ -60,8 +60,8 @@ public abstract class Card {
     private CardDescription description;
     private boolean hasFlavourText;
     private CardDescription flavourText;
-    private final Pixmap pixmap;
     private final TargetMode targetMode;
+    private Pixmap pixmap;
 
     protected Card(String id, String backgroundNinePatch, String bannerTexture, String title, int cost,
                    List<Effect> effects, CardDescription description, boolean hasFlavourText,
@@ -76,9 +76,6 @@ public abstract class Card {
         this.hasFlavourText = hasFlavourText;
         this.flavourText = flavourText;
         this.targetMode = targetMode;
-
-        CardTextureAssembler assembler = CardTextureAssembler.getInstance();
-        this.pixmap = assembler.get(this);
     }
 
     public Card(String id, int cost, List<Effect> effects, TargetMode targetMode) {
@@ -150,6 +147,11 @@ public abstract class Card {
     }
 
     public Pixmap getPixmap() {
+        if (pixmap == null) {
+            CardTextureAssembler assembler = CardTextureAssembler.getInstance();
+            this.pixmap = assembler.get(this);
+        }
+
         return pixmap;
     }
 

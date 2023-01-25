@@ -59,8 +59,7 @@ public class CardTextureAssembler {
         }
         if (skin == null) skin = res.get("skins/default/skin/uiskin.json");
         if (fb == null) fb = new FrameBuffer(Pixmap.Format.RGBA8888,
-                WIDTH, HEIGHT, false);
-        //System.out.println("Fb size: " + fb.getWidth() + " " + fb.getHeight());
+                Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
 
         fb.begin();
 
@@ -69,24 +68,16 @@ public class CardTextureAssembler {
 
         batch.begin();
         Texture tex = res.get("parchment.png", Texture.class);
-        //System.out.println("Tex size: " + tex.getWidth() + " " + tex.getHeight());
-        //System.out.println("TexData size: " + tex.getTextureData().getWidth() + " " + tex.getTextureData().getHeight());
         batch.draw(tex, 0, 0);
-        BitmapFont font = new BitmapFont(); //skin.getFont("default-font");
-        //font.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        font.getData().setScale(4);
+        BitmapFont font = res.getLargeFont(); //skin.getFont("default-font");
         font.setColor(Color.RED);
         font.draw(batch, card.getTitle(), 20, 550);
         font.draw(batch, Integer.toString(card.getCost()), 10, HEIGHT);
         batch.end();
 
-        //TextureRegion fbTr = new TextureRegion(fb.getColorBufferTexture());
-        //fbTr.flip(false,true);
-
         Pixmap pixmap = new Pixmap(WIDTH, HEIGHT, Pixmap.Format.RGBA8888);
         ByteBuffer buf = pixmap.getPixels();
         Gdx.gl.glReadPixels(0, 0, WIDTH, HEIGHT, GL20.GL_RGBA, GL20.GL_UNSIGNED_BYTE, buf);
-        //System.out.println("Pixmap size: " + pixmap.getWidth() + " " + pixmap.getHeight());
 
         fb.end();
 
@@ -106,36 +97,5 @@ public class CardTextureAssembler {
         fb.dispose();
         fb = null;
     }
-
-    //Code snippet i appropriated from stackoverflow, though does not do what i need it to it seems
-    /*private float fboScaler = 1f;
-    private boolean fboEnabled = true;
-    private FrameBuffer fbo;
-    private TextureRegion fboRegion;
-
-    public void render(SpriteBatch spriteBatch) {
-        if(fboEnabled) { // enable or disable the supersampling
-            if(fbo == null) {
-                // m_fboScaler increase or decrease the antialiasing quality
-
-                fbo = new FrameBuffer(Pixmap.Format.RGB565, (int)(WIDTH * fboScaler), (int)(HEIGHT * fboScaler), false);
-                fboRegion = new TextureRegion(fbo.getColorBufferTexture());
-                fboRegion.flip(false, true);
-            }
-
-            fbo.begin();
-        }
-
-        // this is the main render function
-        my_render_impl();
-
-        if(fbo != null) {
-            fbo.end();
-
-            spriteBatch.begin();
-            spriteBatch.draw(fboRegion, 0, 0, WIDTH, HEIGHT);
-            spriteBatch.end();
-        }
-    }*/
 
 }
