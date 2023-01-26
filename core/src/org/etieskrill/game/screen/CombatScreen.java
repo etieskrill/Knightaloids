@@ -3,13 +3,11 @@ package org.etieskrill.game.screen;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.actions.AlphaAction;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
@@ -22,7 +20,6 @@ import org.etieskrill.game.core.card.Card;
 import org.etieskrill.game.core.card.CardCostTooHighException;
 import org.etieskrill.game.core.card.SlashAbilityCard;
 import org.etieskrill.game.core.entity.*;
-import org.etieskrill.game.screen.actions.HitAction;
 import org.etieskrill.game.util.AnimatedImage;
 
 import java.util.ArrayList;
@@ -31,14 +28,14 @@ import java.util.logging.Logger;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 
-public class MainMenuScreen extends BaseScreen {
+public class CombatScreen extends BaseScreen {
 
     public static final int CARD_WIDTH = 200, CARD_HEIGHT = (int) (1.5 * CARD_WIDTH);
     public static final int TOP_CARD_INDEX = 100, UI_ELEMENT_Z_INDEX = 50;
     public static final float DECK_Y = -CARD_HEIGHT / 2.5f, DECK_CARD_DISTANCE = CARD_WIDTH / 1.5f;
     public static final Vector2 DECK_POSITION = new Vector2();
 
-    private static final Logger logger = Logger.getLogger(MainMenuScreen.class.getSimpleName());
+    private static final Logger logger = Logger.getLogger(CombatScreen.class.getSimpleName());
 
     private CombatAPI mission;
     private List<HandCard> handCards;
@@ -63,7 +60,9 @@ public class MainMenuScreen extends BaseScreen {
 
     private TextButton nextTurnButton;
 
-    public MainMenuScreen(App app) {
+    private BooleanWrapper renewEntities;
+
+    public CombatScreen(App app) {
         super(app);
     }
 
@@ -72,6 +71,7 @@ public class MainMenuScreen extends BaseScreen {
         handCards = new ArrayList<>();
         allies = new ArrayList<>();
         enemies = new ArrayList<>();
+        renewEntities = new BooleanWrapper();
 
         mission = new CombatAPIImpl();
 
@@ -85,11 +85,6 @@ public class MainMenuScreen extends BaseScreen {
             initialCards.add(new SlashAbilityCard());
             initialCards.add(new BlockAbilityCard());
         }
-
-        Knight knight = new Knight();
-        addEntity(knight);
-        //TODO automate this, but beware; only do this once at beginning of combat
-        initialCards.addAll(knight.getMoveSet());
 
         mission.setDrawPile(initialCards);
 
@@ -115,7 +110,7 @@ public class MainMenuScreen extends BaseScreen {
         focusIndicator.setVisible(false);
         stage.addActor(focusIndicator);
 
-        mission.setEntities(new Goblin(), new Skeleton());
+        mission.setEntities(new Knight(), new Goblin(), new Goblin(), new Skeleton());
 
         super.addInputProcessor(0, new CardSelectorResetListener()); //TODO hack to make cards "loose focus"
 
@@ -170,9 +165,11 @@ public class MainMenuScreen extends BaseScreen {
         nextTurnButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                mission.discardHandCards();
-                mission.doEnemyTurn();
-                mission.drawCardsToHand(0);
+                mission.nextTurn();
+                clearHandCards();
+                addHandCards(mission.getHandCards());
+                removeAllEntities();
+                addEntities(mission.getEntities());
             }
         });
         uiStage.addActor(nextTurnButton);
@@ -193,9 +190,9 @@ public class MainMenuScreen extends BaseScreen {
 
         private final HandCard handCard;
         private final CombatAPI mission;
-        private final MainMenuScreen screen;
+        private final CombatScreen screen;
 
-        public CardSelectorListener(HandCard handCard, CombatAPI mission, MainMenuScreen screen) {
+        public CardSelectorListener(HandCard handCard, CombatAPI mission, CombatScreen screen) {
             this.handCard = handCard;
             this.mission = mission;
             this.screen = screen;
@@ -271,6 +268,10 @@ public class MainMenuScreen extends BaseScreen {
         }
     }
 
+    private void addHandCards(List<Card> cards) {
+        for (Card card : cards) addHandCard(card);
+    }
+
     private void addHandCards(Card... cards) {
         for (Card card : cards) addHandCard(card);
     }
@@ -286,6 +287,11 @@ public class MainMenuScreen extends BaseScreen {
         handCards.add(handCard);
 
         handCardsChanged = true;
+    }
+
+    private void clearHandCards() {
+        List<HandCard> _handCards = new ArrayList<>(handCards);
+        for (HandCard handCard : _handCards) removeHandCard(handCard.getCard());
     }
 
     private void removeHandCards(Card... cards) {
@@ -306,16 +312,29 @@ public class MainMenuScreen extends BaseScreen {
         handCardsChanged = true;
     }
 
+    private static class BooleanWrapper {
+        private boolean bool = false;
+
+        public boolean get() {
+            return bool;
+        }
+
+        public void set(boolean bool) {
+            this.bool = bool;
+        }
+    }
+
     private static class EntityEffectListener extends Entity.EntityChangeAdapter {
         private final EntityContext context;
+        private final BooleanWrapper renewEntities;
 
-        public EntityEffectListener(EntityContext context) {
+        public EntityEffectListener(EntityContext context, BooleanWrapper renewEntities) {
             this.context = context;
+            this.renewEntities = renewEntities;
         }
 
         @Override
         public void receivedHealthDamage() {
-            System.out.println("before: " + context.getStageActor().getActions());
             context.getStageActor().addAction(
                     sequence(
                             parallel(
@@ -328,12 +347,16 @@ public class MainMenuScreen extends BaseScreen {
                             )
                     )
             );
-            System.out.println("after: " + context.getStageActor().getActions());
         }
 
         @Override
-        public void receivedBlockDamage() {
+        public void entityDied() {
+            renewEntities.set(true);
         }
+    }
+
+    private void addEntities(List<Entity> entities) {
+        for (Entity entity : entities) addEntity(entity);
     }
 
     private void addEntities(Entity... entities) {
@@ -348,26 +371,58 @@ public class MainMenuScreen extends BaseScreen {
         else enemies.add(entityContext);
 
         entityContext.addListener(new EntitySelectorListener(entity, mission));
-        entityContext.getEntity().addChangeListener(new EntityEffectListener(entityContext));
+        entityContext.getEntity().addChangeListener(new EntityEffectListener(entityContext, renewEntities));
         stage.addActor(entityContext);
 
         entitiesChanged = true;
     }
 
+    private void removeAllEntities() {
+        for (EntityContext context : getAllEntites()) removeEntity(context);
+    }
+
     private void removeEntity(Entity entity) {
-        EntityContext entityContext = findEntityContext(entity);
+        removeEntity(findEntityContext(entity));
+    }
+
+    private void removeEntity(EntityContext entityContext) {
         if (entityContext != null) {
             AnimatedImage actor = entityContext.getStageActor();
             actor.clear();
             actor.remove();
-            allies.remove(entityContext);
+            entityContext.getEntity().clearChangeListeners();
+            entityContext.clearListeners();
+            if (entityContext.getEntity() instanceof AlliedEntity) {
+                allies.remove(entityContext);
+            } else if (entityContext.getEntity() instanceof EnemyEntity) {
+                enemies.remove(entityContext);
+            } else {
+                throw new IllegalStateException("trying to remove player entity");
+            }
         }
 
         entitiesChanged = true;
     }
 
+    private List<EntityContext> getAllEntites() {
+        List<EntityContext> entities = new ArrayList<>(allies);
+        entities.addAll(enemies);
+        return entities;
+    }
+
     @Override
     protected void update(float delta) {
+        if (renewEntities.get()) {
+            removeAllEntities();
+            mission.updateEntities();
+            addEntities(mission.getEntities());
+
+            mission.selectEntity(null);
+
+            renewEntities.set(false);
+            entitiesChanged = true;
+        }
+
         float scaleInitial = 1f, scale = 1.2f, duration = 0.15f;
         final int horizontalDiff = (int) ((CARD_WIDTH * scale) - (CARD_WIDTH * scaleInitial));
         final Interpolation interpolation = Interpolation.pow2;

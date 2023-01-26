@@ -11,7 +11,6 @@ import java.util.List;
 public abstract class Card {
 
     public enum TargetMode {
-        ALLY_SINGLE,
         ALLY_FRONT,
         ALLY_BACK,
         ALLY_RANDOM,
@@ -26,9 +25,12 @@ public abstract class Card {
         CASTER;
 
         private static final EnumSet<TargetMode> entityTargetModes =
-                EnumSet.of(ALLY_SINGLE, ALLY_ALL, ENEMY_SINGLE,
+                EnumSet.of(ALLY_ALL, ENEMY_SINGLE,
                 ENEMY_ALL, ALLY_SUMMON_FRONT, ALLY_SUMMON_BEHIND,
                 ENEMY_SUMMON_FRONT, ENEMY_SUMMON_BEHIND);
+
+        private static final EnumSet<TargetMode> allyTargetModes =
+                EnumSet.of(ALLY_FRONT, ALLY_BACK, ALLY_RANDOM, ALLY_SUMMON_FRONT, ALLY_SUMMON_BEHIND);
 
         private static final EnumSet<TargetMode> enemyTargetModes =
                 EnumSet.of(TargetMode.ENEMY_SINGLE, TargetMode.ENEMY_ALL,
@@ -41,12 +43,16 @@ public abstract class Card {
             return entityTargetModes.clone(); //TODO is there a way to make immutable?
         }
 
+        public static EnumSet<TargetMode> getAllyTargetModes() {
+            return allyTargetModes.clone();
+        }
+
         public static EnumSet<TargetMode> getEnemyTargetModes() {
-            return enemyTargetModes;
+            return enemyTargetModes.clone();
         }
 
         public static EnumSet<TargetMode> getCasterTargetModes() {
-            return casterTargetModes;
+            return casterTargetModes.clone();
         }
     }
 

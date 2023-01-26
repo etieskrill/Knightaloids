@@ -1,6 +1,7 @@
 package org.etieskrill.game.core;
 
 import org.etieskrill.game.core.card.CardCostTooHighException;
+import org.etieskrill.game.core.effect.EffectEvent;
 import org.etieskrill.game.core.entity.AlliedEntity;
 import org.etieskrill.game.core.entity.EnemyEntity;
 import org.etieskrill.game.core.entity.Entity;
@@ -31,11 +32,13 @@ public interface CombatAPI {
 
     List<Card> getExilePile();
 
+    EffectEvent getEffectEventFor(Card card, Entity entity);
+
     boolean playCard(Card card) throws InvalidCardTargetException, CardCostTooHighException;
 
     Card playCard(int index) throws InvalidCardTargetException;
 
-    void doEnemyTurn();
+    void nextTurn();
 
     boolean selectEntity(Entity entity);
 
@@ -46,6 +49,8 @@ public interface CombatAPI {
     List<Entity> getEntities();
 
     void setEntities(Entity... entities);
+
+    void updateEntities();
 
     List<AlliedEntity> getAllies();
 

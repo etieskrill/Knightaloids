@@ -42,8 +42,10 @@ public abstract class StatusEffect implements Effect {
     }
 
     @Override
-    public void apply(Card.TargetMode targetMode, Entity caster, Entity target) {
-        apply(target);
+    public void apply(EffectEvent effect) {
+        if (effect.getTarget().size() != 1)
+            throw new IllegalStateException("single status effect instance cannot be applied to multiple entities");
+        apply(effect.getTarget().get(0));
     }
 
     public abstract void apply(Entity target);

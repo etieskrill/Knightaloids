@@ -8,7 +8,7 @@ public class BlockAbilityCard extends AbilityCard {
 
     public BlockAbilityCard() {
         super("base_block", 1, List.of(
-                new BlockEffect()), TargetMode.CASTER);
+                new BlockEffect(6)), TargetMode.CASTER);
         setTitle("Block");
     }
 

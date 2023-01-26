@@ -1,6 +1,7 @@
 package org.etieskrill.game.core;
 
 import org.etieskrill.game.core.card.*;
+import org.etieskrill.game.core.effect.EffectEvent;
 import org.etieskrill.game.core.effect.InstantEffect;
 import org.etieskrill.game.core.effect.StatusEffect;
 import org.etieskrill.game.core.entity.AlliedEntity;
@@ -83,6 +84,7 @@ public class CombatAPIImpl implements CombatAPI {
         if ((drawPile.size() | discardPile.size()) == 0)
             throw new IllegalStateException("neither draw pile nor discard pile contains any cards to reshuffle");
         drawPile.addAll(discardPile);
+        discardPile.clear();
         Collections.shuffle(drawPile);
     }
 
@@ -105,6 +107,35 @@ public class CombatAPIImpl implements CombatAPI {
     @Override
     public List<Card> getExilePile() {
         return Collections.unmodifiableList(exilePile);
+    }
+
+    @Override
+    public EffectEvent getEffectEventFor(Card card, Entity entity) {
+        EffectEvent event = new EffectEvent(card.getTargetMode(), entity, new ArrayList<>(), allies, enemies, player);
+
+        switch (card.getTargetMode()) {
+            case ALLY_FRONT -> {
+                event.setTarget(List.of(getAllies().size() == 0 ? getPlayer() : getAllies().get(getAllies().size() - 1)));
+            }
+            case ALLY_BACK -> event.setTarget(List.of(getAllies().size() == 0 ? getPlayer() : getAllies().get(0)));
+            case ALLY_RANDOM -> {
+                if (event.getAllies().size() == 0) {
+                    event.setTarget(List.of(event.getPlayer()));
+                    break;
+                } else if (event.getAllies().size() == 1) {
+                    event.setTarget(List.of(event.getAllies().get(0)));
+                    break;
+                }
+
+                int target = new Random().nextInt(0, event.getAllies().size() - 1);
+                event.setTarget(List.of(event.getAllies().get(target)));
+            }
+            /*case default -> { //TODO what kind of degenerated hairless monkey configured the gradle build config for this sodding project
+                logger.fine("Card " + card.getClass().getSimpleName() + " had no identifiable target mode.");
+            }*/
+        }
+
+        return event;
     }
 
     @Override
@@ -143,6 +174,8 @@ public class CombatAPIImpl implements CombatAPI {
                     throw new CardCostTooHighException();
                 }
             }
+        } else {
+            caster = player;
         }
 
         TargetMode targetMode = handCards.get(index).getTargetMode();
@@ -160,20 +193,37 @@ public class CombatAPIImpl implements CombatAPI {
         discardPile.add(cardPlayed);
         for (Effect effect : cardPlayed.getEffects()) {
             if (effect instanceof InstantEffect)
-                effect.apply(cardPlayed.getTargetMode(), caster, focusedEntity);
+                effect.apply(new EffectEvent(card.getTargetMode(), caster,
+                        focusedEntity == null ? null : List.of(focusedEntity), allies, enemies, player));
             else if (effect instanceof StatusEffect statusEffect)
                 focusedEntity.addStatusEffect(statusEffect);
         }
 
-        if (caster instanceof Player player) player.useMana(card.getCost());
-        else if (caster instanceof AlliedEntity entity) entity.useMana(card.getCost());
+        if (caster instanceof AlliedEntity entity) entity.useMana(card.getCost());
+        else /*if (caster instanceof Player player)*/ player.useMana(card.getCost());
 
         return cardPlayed;
     }
 
     @Override
-    public void doEnemyTurn() {
-        for (EnemyEntity enemy : enemies) enemy.act();
+    public void nextTurn() {
+        discardHandCards();
+        List<EnemyEntity> _enemies = new ArrayList<>(enemies);
+        for (EnemyEntity enemy : _enemies) {
+            if (!enemy.act(this)) {
+                enemies.remove(enemy);
+                logger.info(enemy.getClass().getName() + " died");
+            }
+        }
+        player.resetMana();
+        List<AlliedEntity> _allies = new ArrayList<>(allies);
+        for (AlliedEntity ally : _allies) {
+            if (!ally.act(this)) {
+                allies.remove(ally);
+                logger.info(ally.getClass().getName() + " died");
+            }
+        }
+        drawCardsToHand(0);
     }
 
     @Override
@@ -211,10 +261,29 @@ public class CombatAPIImpl implements CombatAPI {
     @Override
     public void setEntities(Entity... entities) {
         for (Entity entity : entities) {
-            if (entity instanceof AlliedEntity ally) allies.add(ally);
+            if (entity instanceof AlliedEntity ally) {
+                allies.add(ally);
+                drawPile.addAll(ally.getMoveSet());
+            }
             else if (entity instanceof EnemyEntity enemy) enemies.add(enemy);
             else throw new UnsupportedOperationException(
                     "entity type " + entity.getClass().getSimpleName() + " could not be classified");
+        }
+    }
+
+    @Override
+    public void updateEntities() {
+        for (AlliedEntity ally : allies) {
+            if (ally.isDead()) {
+                allies.remove(ally);
+                return;
+            }
+        }
+        for (EnemyEntity enemy : enemies) {
+            if (enemy.isDead()) {
+                enemies.remove(enemy);
+                return;
+            }
         }
     }
 

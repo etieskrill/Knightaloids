@@ -1,6 +1,8 @@
 package org.etieskrill.game.core.entity;
 
+import org.etieskrill.game.core.CombatAPI;
 import org.etieskrill.game.core.card.Card;
+import org.etieskrill.game.core.effect.Effect;
 import org.etieskrill.game.core.effect.StatusEffect;
 
 import java.util.List;
@@ -17,8 +19,8 @@ public abstract class AlliedEntity extends NonPlayerEntity {
     }
 
     @Override
-    protected void doMove(int move) {
-        throw new UnsupportedOperationException("allied entity has no moveset");
+    protected void entityAct(CombatAPI combat) {
+        mana = baseMana;
     }
 
     public int getMana() {

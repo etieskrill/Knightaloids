@@ -14,21 +14,13 @@ public class Goblin extends EnemyEntity {
 
     static {
         goblinMoveset = new ArrayList<>();
-        goblinMoveset.add(
-                new AbilityCard("goblin_attack_weak", 0, List.of(new AttackEffect(5)), Card.TargetMode.ALLY_SINGLE) {});
+        goblinMoveset.add(new AbilityCard("goblin_attack_weak", 0, List.of(new AttackEffect(5)), Card.TargetMode.ALLY_FRONT) {});
+        goblinMoveset.add(new AbilityCard("goblin_attack_weak", 0, List.of(new AttackEffect(5)), Card.TargetMode.ALLY_FRONT) {});
+        goblinMoveset.add(new AbilityCard("goblin_attack_strong", 0, List.of(new AttackEffect(15)), Card.TargetMode.ALLY_FRONT) {});
     }
 
     public Goblin() {
         super(goblinMoveset, 30, new ArrayList<>());
-    }
-
-    @Override
-    protected void doMove(int move) {
-        if (move == 0) {
-            for (Effect effect : moveSet.get(0).getEffects()) {
-                effect.apply(moveSet.get(0).getTargetMode(), this, null);
-            }
-        }
     }
 
     @Override

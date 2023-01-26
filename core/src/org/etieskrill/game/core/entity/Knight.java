@@ -1,5 +1,6 @@
 package org.etieskrill.game.core.entity;
 
+import org.etieskrill.game.core.CombatAPI;
 import org.etieskrill.game.core.card.OverheadSwingSkillCard;
 
 import java.util.ArrayList;
@@ -21,6 +22,5 @@ public class Knight extends AlliedEntity {
     public String getDisplayName() {
         return "Knight";
     }
-
 
 }

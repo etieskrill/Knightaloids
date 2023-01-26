@@ -1,7 +1,5 @@
 package org.etieskrill.game.core.entity;
 
-import com.badlogic.gdx.scenes.scene2d.EventListener;
-import org.etieskrill.game.core.CombatAPI;
 import org.etieskrill.game.core.card.Card;
 import org.etieskrill.game.core.effect.StatusEffect;
 
@@ -32,43 +30,6 @@ public abstract class Entity {
         this.changeListeners = new ArrayList<>(2);
     }
 
-    /**
-     * @return false if the entity died during move, true otherwise
-     */
-    public boolean act() {
-        updateMultipliers();
-
-        for (StatusEffect statusEffect : statusEffects) {
-            if (statusEffect.getApplication() == StatusEffect.EffectApplication.BEFORE_TURN)
-                statusEffect.apply(this);
-        }
-
-        if (isDead()) return false;
-
-        this.block = 0;
-
-        if (this instanceof EnemyEntity) { //TODO i know this is very bad, but i just don't have the time right now
-            doMove(moveSetIndex++);
-            if (moveSet.size() <= moveSetIndex) moveSetIndex = 0;
-        }
-
-        for (StatusEffect statusEffect : statusEffects) {
-            if (statusEffect.getApplication() == StatusEffect.EffectApplication.AFTER_TURN)
-                statusEffect.apply(this);
-            statusEffect.reduceStacks();
-            if (statusEffect.getStacks() <= 0) statusEffects.remove(statusEffect);
-        }
-
-        updateMultipliers();
-
-        return !isDead();
-    }
-
-    protected abstract void doMove(int move);
-
-    private void updateMultipliers() {
-    }
-
     public abstract String getName();
 
     public abstract String getDisplayName();
@@ -84,6 +45,8 @@ public abstract class Entity {
             this.health -= damage;
             for (EntityChangeListener listener : changeListeners) listener.receivedHealthDamage();
         }
+
+        if (isDead()) for (EntityChangeListener listener : changeListeners) listener.entityDied();
     }
 
     public void damageIgnoreBlock(float damage) {
@@ -91,6 +54,7 @@ public abstract class Entity {
         this.health -= damage;
 
         for (EntityChangeListener listener : changeListeners) listener.receivedHealthDamage();
+        if (isDead()) for (EntityChangeListener listener : changeListeners) listener.entityDied();
     }
 
     public float getHealth() {
@@ -160,11 +124,17 @@ public abstract class Entity {
         return this.changeListeners.remove(index);
     }
 
+    public void clearChangeListeners() {
+        this.changeListeners.clear();
+    }
+
     /**
      * This is a garbage idea tbh, but eh. Reducing coupling is key, or so they say.
      */
     public interface EntityChangeListener {
         void receivedHealthDamage();
+
+        void entityDied();
 
         void receivedBlockDamage();
 
@@ -172,12 +142,19 @@ public abstract class Entity {
     }
 
     public static class EntityChangeAdapter implements EntityChangeListener {
+        @Override
         public void receivedHealthDamage() {
         }
 
+        @Override
+        public void entityDied() {
+        }
+
+        @Override
         public void receivedBlockDamage() {
         }
 
+        @Override
         public void statusEffectsChanged() {
         }
     }

@@ -70,9 +70,9 @@ public class CardTextureAssembler {
         Texture tex = res.get("parchment.png", Texture.class);
         batch.draw(tex, 0, 0);
         BitmapFont font = res.getLargeFont(); //skin.getFont("default-font");
-        font.setColor(Color.RED);
+        font.setColor(Color.SALMON);
         font.draw(batch, card.getTitle(), 20, 550);
-        font.draw(batch, Integer.toString(card.getCost()), 10, HEIGHT);
+        font.draw(batch, Integer.toString(card.getCost()), 10, HEIGHT - 10);
         batch.end();
 
         Pixmap pixmap = new Pixmap(WIDTH, HEIGHT, Pixmap.Format.RGBA8888);

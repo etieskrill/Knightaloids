@@ -45,10 +45,10 @@ public class PlayerContext extends VerticalGroup {
     }
 
     private void update() {
-        nameLabel.setText(name.length() != 0 ? name : id);
+        nameLabel.setText(name.length() != 0 ? player.getDisplayName() : player.getName());
         healthLabel.setText(player.getHealth() <= 0 ? "dead" :
                 String.format("Health: %d / %d", (int) player.getHealth(), (int) player.getBaseHealth()));
-        manaLabel.setText("Mana:" + player.getMana());
+        manaLabel.setText("Mana:" + player.getMana() + "/" + player.getBaseMana());
     }
 
     public static class PlayerContextFactory {

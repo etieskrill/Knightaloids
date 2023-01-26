@@ -8,7 +8,7 @@ public class SlashAbilityCard extends AbilityCard {
 
     public SlashAbilityCard() {
         super("base_slash", 1, List.of(
-                new AttackEffect(8)
+                new AttackEffect(6)
         ), TargetMode.ENEMY_SINGLE);
         setTitle("Slash");
     }

@@ -27,7 +27,7 @@ public class LoadingScreen extends BaseScreen {
     @Override
     protected void render() {
         if (manager.getManager().update()) {
-            app.setScreen(new MainMenuScreen(app));
+            app.setScreen(new CombatScreen(app));
         }
 
         for (Actor actor : uiStage.getActors()) {

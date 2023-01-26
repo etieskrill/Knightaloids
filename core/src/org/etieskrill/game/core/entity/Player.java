@@ -35,9 +35,12 @@ public class Player extends Entity {
         this.mana -= amount;
     }
 
-    @Override
-    protected void doMove(int move) {
-        throw new UnsupportedOperationException("player has no moveset");
+    public void resetMana() {
+        this.mana = baseMana;
+    }
+
+    public int getBaseMana() {
+        return baseMana;
     }
 
     @Override
