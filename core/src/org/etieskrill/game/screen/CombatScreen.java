@@ -100,8 +100,9 @@ public class CombatScreen extends BaseScreen {
             playerContextFactory = new PlayerContext.PlayerContextFactory(manager);
         }
         playerContext = playerContextFactory.getFor(mission.getPlayer());
-        playerContext.setPosition(playerContext.getWidth(), stage.getHeight() - playerContext.getHeight());
         stage.addActor(playerContext);
+        playerContext.setPosition(0, stage.getHeight() - 125f);
+        System.out.println(playerContext.getWidth() + " " + (stage.getHeight() - playerContext.getHeight()));
 
         TextureRegion _focusIndicator = new TextureRegion(manager.get("focus_indicator.png", Texture.class));
         _focusIndicator.flip(false, true);
@@ -351,7 +352,22 @@ public class CombatScreen extends BaseScreen {
 
         @Override
         public void entityDied() {
-            renewEntities.set(true);
+            context.getStageActor().addAction(
+                    sequence(
+                            parallel(
+                                    moveBy(200, 0, 1f, Interpolation.linear),
+                                    color(Color.GRAY, 1f, Interpolation.linear),
+                                    fadeOut(1f, Interpolation.linear)
+                            ),
+                            new Action() {
+                                @Override
+                                public boolean act(float delta) {
+                                    renewEntities.set(true);
+                                    return true;
+                                }
+                            }
+                    )
+            );
         }
     }
 
@@ -391,7 +407,8 @@ public class CombatScreen extends BaseScreen {
             actor.clear();
             actor.remove();
             entityContext.getEntity().clearChangeListeners();
-            entityContext.clearListeners();
+            entityContext.clear();
+            entityContext.remove();
             if (entityContext.getEntity() instanceof AlliedEntity) {
                 allies.remove(entityContext);
             } else if (entityContext.getEntity() instanceof EnemyEntity) {

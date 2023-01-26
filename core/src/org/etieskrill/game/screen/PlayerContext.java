@@ -1,15 +1,8 @@
 package org.etieskrill.game.screen;
 
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
-import com.badlogic.gdx.utils.GdxRuntimeException;
-import org.etieskrill.game.core.effect.StatusEffect;
-import org.etieskrill.game.core.entity.AlliedEntity;
-import org.etieskrill.game.core.entity.Entity;
 import org.etieskrill.game.core.entity.Player;
-import org.etieskrill.game.util.AnimatedImage;
 import org.etieskrill.game.util.ResourceManager;
 
 public class PlayerContext extends VerticalGroup {
@@ -27,7 +20,7 @@ public class PlayerContext extends VerticalGroup {
         this.id = id;
         this.name = name;
 
-        Label.LabelStyle style = new Label.LabelStyle(manager.getFont(), null);
+        Label.LabelStyle style = new Label.LabelStyle(manager.getSmallFont(), null);
 
         nameLabel = new Label(name, style);
         healthLabel = new Label("0/0", style);
@@ -36,6 +29,8 @@ public class PlayerContext extends VerticalGroup {
         addActor(nameLabel);
         addActor(healthLabel);
         addActor(manaLabel);
+
+        setSize(300f, 125f);
     }
 
     @Override

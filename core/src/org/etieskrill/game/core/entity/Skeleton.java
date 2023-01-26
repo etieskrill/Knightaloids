@@ -20,7 +20,7 @@ public class Skeleton extends EnemyEntity {
     }
 
     public Skeleton() {
-        super(skeletonMoveset, 55, new ArrayList<>());
+        super(skeletonMoveset, 40, new ArrayList<>());
     }
 
     @Override

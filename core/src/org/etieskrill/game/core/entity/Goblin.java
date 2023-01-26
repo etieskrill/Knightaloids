@@ -20,7 +20,7 @@ public class Goblin extends EnemyEntity {
     }
 
     public Goblin() {
-        super(goblinMoveset, 30, new ArrayList<>());
+        super(goblinMoveset, 25, new ArrayList<>());
     }
 
     @Override

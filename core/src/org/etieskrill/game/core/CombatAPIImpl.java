@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 
 public class CombatAPIImpl implements CombatAPI {
 
-    public static final int DEFAULT_NUMBER_CARDS_DRAWN = 5;
+    public static final int DEFAULT_NUMBER_CARDS_DRAWN = 4;
 
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
 

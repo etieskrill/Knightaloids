@@ -51,7 +51,7 @@ public class EntityContext extends HorizontalGroup {
         this.stageActor.setScale(DEFAULT_SCALE);
         this.stageActorContainer = new WidgetGroup(stageActor);
         this.stageActor.setPosition(-stageActor.getWidth(), -stageActor.getHeight());
-        this.nameLabel = new Label(name, mediumStyle);
+        this.nameLabel = new Label(name, smallStyle);
 
         Pixmap pixmap = new Pixmap(100, 10, Pixmap.Format.RGBA8888);
         pixmap.setColor(Color.RED);
