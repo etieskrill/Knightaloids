@@ -48,7 +48,7 @@ public interface CombatAPI {
 
     List<Entity> getEntities();
 
-    void setEntities(Entity... entities);
+    void addEntities(Entity... entities);
 
     void updateEntities();
 

@@ -259,7 +259,7 @@ public class CombatAPIImpl implements CombatAPI {
     }
 
     @Override
-    public void setEntities(Entity... entities) {
+    public void addEntities(Entity... entities) {
         for (Entity entity : entities) {
             if (entity instanceof AlliedEntity ally) {
                 allies.add(ally);

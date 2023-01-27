@@ -111,7 +111,7 @@ public class CombatScreen extends BaseScreen {
         focusIndicator.setVisible(false);
         stage.addActor(focusIndicator);
 
-        mission.setEntities(new Knight(), new Goblin(), new Goblin(), new Skeleton());
+        mission.addEntities(new Knight(), new Goblin(), new Goblin(), new Skeleton());
 
         super.addInputProcessor(0, new CardSelectorResetListener()); //TODO hack to make cards "loose focus"
 
